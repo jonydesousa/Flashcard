@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartões Salvos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style> 
+      
+      /* Adicione este CSS dentro da sua tag <style> */
+
+/* Animação para tremer (Shake) */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.shaking {
+    animation: shake 0.5s;
+    border: 3px solid #dc3545 !important; /* Borda vermelha para reforçar o erro */
+}
+      
+        body { 
+            font-family: sans-serif; 
+            padding: 20px; 
+            background-color: #2e2e2e; 
+            color: #f0f0f0; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { color: #4CAF50; margin-bottom: 20px; }
+        a { color: #76a9ff; text-decoration: none; display: block; margin-bottom: 20px;}
+        .cartoes-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        /* --- Seção de Revisão (Estabilidade) --- */
+        #controle-revisao {
+            background-color: #383838; 
+            padding: 20px; 
+            border-radius: 8px; 
+            width: 320px; 
+            margin-bottom: 30px; 
+            text-align: center;
+        }
+        #controle-revisao h2 { color: #f0f0f0; margin-bottom: 15px; font-size: 1.3em; }
+
+        .revisao-item {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .revisao-item label {
+            font-weight: bold; 
+            min-width: 60px;
+        }
+        .revisao-item span.contagem {
+            font-size: 1em;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            min-width: 30px;
+            text-align: center;
+        }
+        #contagem-facil { background-color: #28a745; color: white; }
+        #contagem-dificil { background-color: #dc3545; color: white; }
+        /* NOVO: Estilo para Contagem Revisado (Azul) */
+        #contagem-revisado { background-color: #007bff; color: white; } 
+        #contagem-pendente { background-color: #6c757d; color: white; }
+
+        /* Controles de Input e Botão */
+        .revisao-controles { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            min-width: 130px; 
+        }
+        .revisao-controles input {
+            width: 50px; 
+            padding: 5px; 
+            border-radius: 4px; 
+            border: 1px solid #555; 
+            background-color: #444; 
+            color: #f0f0f0;
+        }
+        .revisao-controles button {
+            padding: 5px 10px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Estrutura do Cartão */
+        .cartao {
+            background-color: #383838;
+            border-radius: 8px;
+            padding: 15px;
+            width: 320px; /* Largura Fixa para Melhor Visualização */
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.4);
+            position: relative;
+        }
+        .cartao h3 { 
+            color: #4CAF50; 
+            margin-top: 0; 
+            font-size: 1.1em;
+            padding-bottom: 8px; 
+            border-bottom: 1px solid #555; 
+            margin-bottom: 15px;
+        }
+
+        /* Botão de Opções (3 Pontos) */
+        .opcoes-menu {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+        .opcoes-button {
+            background: none;
+            border: none;
+            color: #f0f0f0;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+        /* Container dos 3 Blocos */
+        .blocos-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 10px; 
+        }
+
+        /* Estrutura do Flip Individual */
+        .bloco-wrapper {
+            perspective: 600px;
+            flex: 1;
+            height: 100px;
+            min-height: 100px;
+        }
+        .bloco-flip {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        .bloco-flip.flipped {
+            transform: rotateY(180deg);
+        }
+        .bloco-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            box-sizing: border-box;
+            font-weight: bold;
+            text-align: center;
+            font-size: 0.9em;
+            word-wrap: break-word; /* Importante para quebrar texto longo */
+        }
+        .bloco-front-style { background-color: #555; color: #f0f0f0; border: 2px solid #555; }
+        .bloco-back-style { transform: rotateY(180deg); background-color: #383838; color: #f0f0f0; border: 2px solid; }
+
+        /* Controles de Áudio */
+        .audio-controles {
+            display: flex;
+            justify-content: space-between; 
+            width: 100%;
+            margin-bottom: 15px;
+            gap: 8px;
+        }
+        .audio-controles button {
+            flex: 1; 
+            background: none;
+            border: none;
+            color: #76a9ff; 
+            font-size: 1.5em; 
+            cursor: pointer;
+            padding: 5px;
+            text-align: center;
+        }
+
+        /* Campo de Anotação Único */
+        .anotacao-area {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .anotacao-area label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.85em;
+            text-align: left;
+        }
+        .campo-anotacao-unico {
+            width: 100%;
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background-color: #444;
+            color: #f0f0f0;
+            box-sizing: border-box;
+            font-size: 0.9em;
+        }
+
+        /* Botão Verificar (Centralização) */
+        .verificar-container {
+            display: flex;
+            justify-content: center; 
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .botao-verificar {
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 6px 15px; 
+            border-radius: 4px; 
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        /* Botões de Classificação */
+        .botoes-acao {
+            display: flex;
+            justify-content: space-between;
+        }
+        .botoes-acao button {
+            padding: 8px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85em;
+            flex: 1;
+            margin: 0 4px;
+        }
+        /* ALTERADO: Classe para o botão Revisado (que virou classificação) */
+        .botao-revisado { background-color: #007bff; color: white; } 
+        .botao-facil { background-color: #28a745; color: white; }
+        .botao-dificil { background-color: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    
+    <h1>Seus Cartões Salvos</h1>
+    
+    <a href="Teste.html">← Voltar para Criar Cartão</a> 
+    
+    <div id="controle-revisao">
+        <h2>Revisão por Categoria</h2>
+
+        <div class="revisao-item">
+            <label style="color: #6c757d;">Pendentes:</label>
+            <span id="contagem-pendente" class="contagem">0</span>
+            <div class="revisao-controles" style="justify-content: flex-end; min-width: 130px;">
+                <button onclick="iniciarRevisao('todos', 5)" style="background-color: #6c757d; color: white;">Revisar</button>
+            </div>
+        </div>
+        
+        <div class="revisao-item">
+            <label style="color: #007bff;">Revisado:</label>
+            <span id="contagem-revisado" class="contagem">0</span>
+            <div class="revisao-controles">
+                <input type="number" id="qtd-revisado" value="0" min="1">
+                <button onclick="iniciarRevisao('revisado')" style="background-color: #007bff; color: white;">Revisar</button>
+            </div>
+        </div>
+        <div class="revisao-item">
+            <label style="color: #28a745;">Fácil:</label>
+            <span id="contagem-facil" class="contagem">0</span>
+            <div class="revisao-controles">
+                <input type="number" id="qtd-facil" value="0" min="1">
+                <button onclick="iniciarRevisao('facil')" style="background-color: #28a745; color: white;">Revisar</button>
+            </div>
+        </div>
+
+        <div class="revisao-item">
+            <label style="color: #dc3545;">Difícil:</label>
+            <span id="contagem-dificil" class="contagem">0</span>
+            <div class="revisao-controles">
+                <input type="number" id="qtd-dificil" value="0" min="1">
+                <button onclick="iniciarRevisao('dificil')" style="background-color: #dc3545; color: white;">Revisar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cartoes-container" class="cartoes-container">
+        </div>
+
+    <script>
+   document.addEventListener('DOMContentLoaded', () => {
+    contarCartoes();
+    // Garante que a primeira carga exibe TUDO para ver se os cartões existem
+    carregarCartoes('todos', Infinity); 
+});
+
+// --- NOVO: LÓGICA DE VERIFICAÇÃO E TREMER ---
+
+/**
+ * Remove a classe 'shaking' e o estilo de erro/acerto de um cartão específico.
+ * @param {number} cartaoId O ID do cartão.
+ * @param {boolean} isSuccess Indica se deve remover o estilo de sucesso também.
+ */
+function removerShake(cartaoId, isSuccess = false) {
+    const cartaoElement = document.querySelector(`.cartao[data-id='${cartaoId}']`);
+    if (cartaoElement) {
+        cartaoElement.classList.remove('shaking');
+        cartaoElement.style.border = 'none'; // Remove borda de erro/sucesso
+        if (isSuccess) {
+            cartaoElement.classList.remove('success-border'); // Remove borda de acerto (se implementada)
+        }
+    }
+}
+
+
+/**
+ * Verifica o texto digitado contra todos os 3 blocos de todos os cartões na tela.
+ */
+function verificarQuiz() {
+    const todosCartoesNaTela = document.querySelectorAll('.cartao');
+    
+    // Se não houver cartões na tela, não há nada para verificar
+    if (todosCartoesNaTela.length === 0) return;
+
+    // Obtém o input (usando o ID do primeiro cartão na tela como base)
+    const inputElement = document.getElementById(`anotacao-cartao-${todosCartoesNaTela[0].getAttribute('data-id')}`);
+    
+    if (!inputElement) return;
+
+    const tentativaUsuario = inputElement.value.toLowerCase().trim();
+    let acertoEncontrado = false;
+
+    // 1. ITERAR SOBRE CADA CARTÃO NA TELA
+    todosCartoesNaTela.forEach(cartaoElement => {
+        const cartaoId = cartaoElement.getAttribute('data-id');
+        const cartoesArray = getCartoesArray();
+        const cartaoData = cartoesArray.find(c => c.id == cartaoId);
+        
+        if (!cartaoData) return;
+
+        // Limpa bordas/shake de qualquer tentativa anterior
+        removerShake(cartaoId); 
+
+        // 2. VERIFICAR CONTRA TODOS OS TRÊS BLOCOS
+        ['bloco1', 'bloco2', 'bloco3'].forEach((blocoNome, index) => {
+            const respostaCorreta = cartaoData[blocoNome] ? cartaoData[blocoNome].toLowerCase().trim() : '';
+
+            // Se a tentativa do usuário for igual à resposta do bloco
+            if (tentativaUsuario === respostaCorreta && respostaCorreta.length > 0) {
+                
+                // --- AÇÃO DE ACERTO ---
+                acertoEncontrado = true;
+                
+                // 1. Vira o bloco correspondente
+                const blocoNumero = index + 1;
+                virarBloco(`${cartaoId}-${blocoNumero}`);
+                
+                // 2. O Cartão Fica VERDE (Borda de Sucesso)
+                cartaoElement.style.border = '3px solid #28a745'; 
+                
+                // 3. Limpa o input (para tentar a próxima frase)
+                inputElement.value = "";
+            }
+        });
+    });
+
+    // 3. REAÇÃO FINAL (TREMER)
+    if (acertoEncontrado) {
+        // Nada mais a fazer, a reação visual está no loop.
+
+    } else {
+        // --- AÇÃO DE ERRO UNIVERSAL ---
+        
+        // Se não houve NENHUM acerto em NENHUM cartão/bloco:
+        
+        // 1. Todos os cartões na tela tremem (Borda Vermelha)
+        todosCartoesNaTela.forEach(cartaoElement => {
+            const id = cartaoElement.getAttribute('data-id');
+            cartaoElement.classList.add('shaking');
+            cartaoElement.style.border = '3px solid #dc3545'; // Borda Vermelha
+            setTimeout(() => removerShake(id), 500);
+        });
+
+        // 2. A frase digitada permanece no input para nova tentativa
+    }
+}
+
+// --- FUNÇÕES DE LÓGICA DE DADOS ---
+
+function getCartoesArray() {
+    const cartoesSalvosString = localStorage.getItem('meusCartoes');
+    return cartoesSalvosString ? JSON.parse(cartoesSalvosString) : [];
+}
+
+function salvarCartoesArray(cartoesArray) {
+    localStorage.setItem('meusCartoes', JSON.stringify(cartoesArray));
+}
+
+/**
+ * Função CORRIGIDA para contar cartões pendentes de forma robusta.
+ */
+function contarCartoes() {
+    const cartoesArray = getCartoesArray();
+    let contagem = { facil: 0, revisado: 0, dificil: 0, pendente: 0 }; 
+
+    cartoesArray.forEach(cartao => {
+        // Verifica se a classificação está ausente ou vazia
+        if (!cartao.classificacao || cartao.classificacao === '') {
+            contagem.pendente++;
+        } else if (cartao.classificacao === 'facil') {
+            contagem.facil++;
+        } else if (cartao.classificacao === 'revisado') {
+            contagem.revisado++;
+        } else if (cartao.classificacao === 'dificil') {
+            contagem.dificil++;
+        }
+    });
+
+    document.getElementById('contagem-facil').textContent = contagem.facil;
+    document.getElementById('contagem-dificil').textContent = contagem.dificil;
+    document.getElementById('contagem-pendente').textContent = contagem.pendente;
+    document.getElementById('contagem-revisado').textContent = contagem.revisado; 
+
+    return contagem;
+}
+
+function classificarCartao(id, classificacao) {
+    let cartoesArray = getCartoesArray();
+    const cartaoIndex = cartoesArray.findIndex(c => c.id == id);
+    
+    if (cartaoIndex !== -1) {
+        if (cartoesArray[cartaoIndex].classificacao === classificacao) {
+            // Se clicar na classificação atual, remove a classificação (volta para pendente)
+            delete cartoesArray[cartaoIndex].classificacao;
+        } else {
+            cartoesArray[cartaoIndex].classificacao = classificacao; 
+        }
+        
+        salvarCartoesArray(cartoesArray);
+        contarCartoes(); 
+        
+        // Recarrega todos para refletir o novo status
+        carregarCartoes('todos'); 
+    }
+}
+
+function iniciarRevisao(categoria, limiteOverride) {
+    let limite;
+    if (limiteOverride) {
+        limite = limiteOverride;
+    } else {
+        const inputId = `qtd-${categoria}`;
+        limite = parseInt(document.getElementById(inputId).value);
+    }
+
+    if (isNaN(limite) || limite <= 0) {
+        alert("Por favor, insira uma quantidade válida para a revisão.");
+        return;
+    }
+
+    carregarCartoes(categoria, limite);
+}
+
+// --- FUNÇÕES DE RENDERIZAÇÃO ---
+
+function carregarCartoes(filtro = 'todos', limite = Infinity) {
+    const container = document.getElementById('cartoes-container');
+    let cartoesArray = getCartoesArray();
+
+    // 1. FILTRAGEM
+    let cartoesFiltrados;
+    if (filtro === 'facil' || filtro === 'dificil' || filtro === 'revisado') { 
+        cartoesFiltrados = cartoesArray.filter(cartao => cartao.classificacao === filtro);
+    } else {
+        // Filtro para "pendentes" (sem classificação)
+        cartoesFiltrados = cartoesArray.filter(cartao => !cartao.classificacao || cartao.classificacao === ''); 
+    }
+    
+    // 2. EMBARALHAMENTO (SHUFFLE) e 3. LIMITE
+    if (limite !== Infinity && cartoesFiltrados.length > 0) {
+        for (let i = cartoesFiltrados.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [cartoesFiltrados[i], cartoesFiltrados[j]] = [cartoesFiltrados[j], cartoesFiltrados[i]];
+        }
+        cartoesFiltrados = cartoesFiltrados.slice(0, limite);
+    }
+
+    container.innerHTML = ''; 
+
+    if (cartoesFiltrados.length === 0) {
+        // Se a busca foi por um filtro específico, a mensagem é mais clara
+        const categoriaNome = (filtro === 'todos') ? 'Pendentes' : filtro.charAt(0).toUpperCase() + filtro.slice(1);
+        container.innerHTML = `<p style="margin-top: 20px;">Nenhum cartão para revisar na categoria '${categoriaNome}'.</p>`;
+        return;
+    }
+    
+    // 4. RENDERIZAÇÃO
+    cartoesFiltrados.forEach(cartao => {
+        const divCartao = document.createElement('div');
+        divCartao.className = 'cartao';
+        divCartao.setAttribute('data-id', cartao.id); 
+        
+        // O restante do HTML do cartão...
+        divCartao.innerHTML = `
+            <h3>${cartao.idioma}</h3>
+
+            <div class="opcoes-menu">
+                <button class="opcoes-button" onclick="mostrarOpcoes(${cartao.id})">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            </div>
+
+            <div class="blocos-container">
+                ${criarBlocoHTML(cartao, 1, cartao.bloco1, 'bloco-1')}
+                ${criarBlocoHTML(cartao, 2, cartao.bloco2, 'bloco-2')}
+                ${criarBlocoHTML(cartao, 3, cartao.bloco3, 'bloco-3')}
+            </div>
+
+            <div class="audio-controles">
+                <button class="audio-button" onclick="tocarAudioReal('${cartao.audio1 || ''}')" title="Ouvir Bloco 1"><i class="fas fa-volume-up"></i></button>
+                <button class="audio-button" onclick="tocarAudioReal('${cartao.audio2 || ''}')" title="Ouvir Bloco 2"><i class="fas fa-volume-up"></i></button>
+                <button class="audio-button" onclick="tocarAudioReal('${cartao.audio3 || ''}')" title="Ouvir Bloco 3"><i class="fas fa-volume-up"></i></button>
+            </div>
+            
+            <div class="anotacao-area">
+                <label for="anotacao-cartao-${cartao.id}">O que você ouviu/Anotações:</label>
+                <input type="text" 
+                        id="anotacao-cartao-${cartao.id}" 
+                        class="campo-anotacao-unico" 
+                        placeholder="Digite aqui o que você está ouvindo ou alguma observação..."
+                        value="${cartao.anotacao || ''}" 
+                        onchange="salvarAnotacaoUnica(${cartao.id}, this.value)">
+            </div>
+
+            <div class="verificar-container">
+                <button class="botao-verificar" onclick="verificarQuiz()">Verificar Anotação</button>
+            </div>
+
+            <div class="botoes-acao">
+                <button class="botao-revisado" onclick="virarTodosBlocos(${cartao.id}); classificarCartao(${cartao.id}, 'revisado');">🔄 Revisado</button> 
+                <button class="botao-facil" onclick="classificarCartao(${cartao.id}, 'facil')">✅ Fácil</button>
+                <button class="botao-dificil" onclick="classificarCartao(${cartao.id}, 'dificil')">❌ Difícil</button>
+            </div>
+        `;
+        container.appendChild(divCartao);
+    });
+}
+
+// --- FUNÇÕES AUXILIARES (MANUTENÇÃO) ---
+
+function tocarAudioReal(nomeArquivo) {
+    if (!nomeArquivo) {
+        alert('Áudio não disponível. Nenhum arquivo de áudio foi selecionado para este bloco.');
+        return;
+    }
+    const audio = new Audio(nomeArquivo);
+    audio.play().catch(error => {
+        console.error('Erro ao tentar reproduzir o áudio:', error);
+        alert(`ERRO DE ÁUDIO: Não foi possível tocar o arquivo "${nomeArquivo}". Por favor, verifique se o arquivo de áudio foi copiado para a mesma pasta do seu arquivo HTML.`);
+    });
+}
+
+function criarBlocoHTML(cartao, numero, textoConteudo, classe) {
+    return `
+        <div class="bloco-wrapper ${classe}">
+            <div class="bloco-flip" id="flip-${cartao.id}-${numero}" onclick="virarBloco('${cartao.id}-${numero}')">
+                <div class="bloco-face bloco-front-style">
+                    Clique para Virar
+                </div>
+                <div class="bloco-face bloco-back-style">
+                    ${textoConteudo || `Bloco ${numero} Vazio`}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function mostrarOpcoes(id) {
+    const acao = prompt("Opções:\n\n1: Editar (Simular)\n2: Remover\n\nDigite o número da opção:");
+    
+    if (acao === '2') {
+        removerCartao(id);
+    } else if (acao === '1') {
+        alert("Simulação de Edição.");
+    }
+}
+
+function virarBloco(id) {
+    const blocoElement = document.getElementById(`flip-${id}`);
+    blocoElement.classList.toggle('flipped');
+}
+
+function virarTodosBlocos(cartaoId) {
+    for(let i = 1; i <= 3; i++) {
+        const blocoElement = document.getElementById(`flip-${cartaoId}-${i}`);
+        if (blocoElement) {
+            blocoElement.classList.add('flipped');
+        }
+    }
+}
+
+function salvarAnotacaoUnica(id, texto) {
+    let cartoesArray = getCartoesArray();
+    const cartaoIndex = cartoesArray.findIndex(c => c.id == id);
+    if (cartaoIndex !== -1) {
+        cartoesArray[cartaoIndex].anotacao = texto; 
+        salvarCartoesArray(cartoesArray);
+    }
+}
+
+function removerCartao(id) {
+    if (!confirm("Tem certeza que deseja remover este cartão?")) return;
+    let cartoesArray = getCartoesArray();
+    
+    cartoesArray = cartoesArray.filter(cartao => cartao.id != id);
+    
+    salvarCartoesArray(cartoesArray);
+    contarCartoes(); 
+    carregarCartoes('todos'); 
+}
+</script> 
+    
+         
+</body>
+</html>

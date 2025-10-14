@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Cartão de Idioma</title>
+    <style>
+        /* Estilos básicos para organização (pode ser expandido com CSS) */
+        body { font-family: sans-serif; padding: 20px; background-color: #2e2e2e; color: #f0f0f0; }
+        h1 { color: #4CAF50; }
+        hr { border-color: #555; }
+        input[type="text"] { background-color: #3e3e3e; color: #f0f0f0; border: 1px solid #555; }
+        /* Adicionado para estilizar melhor o input file, embora o estilo nativo varie */
+        input[type="file"] { color: #f0f0f0; padding: 8px 0; } 
+        .bloco-idioma {
+            border: 1px solid #555;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            background-color: #383838;
+        }
+        .bloco-idioma label, .bloco-idioma input, .bloco-idioma button {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .bloco-idioma input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .bloco-idioma h3 { margin-top: 0; }
+        .botao-salvar {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .botao-salvar:hover { background-color: #45a049; }
+        a { color: #76a9ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <h1>Criar Novo Cartão de Idioma</h1>
+
+    <form id="form-cartao">
+        <label for="nome-idioma">Qual idioma você está praticando?</label>
+        <input type="text" id="nome-idioma" name="nome-idioma" placeholder="Ex: Japonês, Inglês" required>
+
+        <hr>
+
+        <div class="bloco-idioma">
+            <h3>Bloco 1: Palavra/Frase</h3>
+            <label for="bloco1-texto">Texto do Bloco 1 (Ex: Palavra no idioma)</label>
+            <input type="text" id="bloco1-texto" name="bloco1-texto" placeholder="Ex: 'Hello'">
+            
+            <label for="bloco1-audio">Adicionar Áudio (.mp3, .wav, etc.)</label>
+            <input type="file" id="bloco1-audio" name="bloco1-audio" accept="audio/*">
+        </div>
+
+        <div class="bloco-idioma">
+            <h3>Bloco 2: Tradução/Contexto</h3>
+            <label for="bloco2-texto">Texto do Bloco 2 (Ex: Tradução)</label>
+            <input type="text" id="bloco2-texto" name="bloco2-texto" placeholder="Ex: 'Olá'">
+            
+            <label for="bloco2-audio">Adicionar Áudio (.mp3, .wav, etc.)</label>
+            <input type="file" id="bloco2-audio" name="bloco2-audio" accept="audio/*">
+        </div>
+
+        <div class="bloco-idioma">
+            <h3>Bloco 3: Exemplo/Observação</h3>
+            <label for="bloco3-texto">Texto do Bloco 3 (Ex: Frase de Exemplo)</label>
+            <input type="text" id="bloco3-texto" name="bloco3-texto" placeholder="Ex: 'Hello, how are you?'">
+            
+            <label for="bloco3-audio">Adicionar Áudio (.mp3, .wav, etc.)</label>
+            <input type="file" id="bloco3-audio" name="bloco3-audio" accept="audio/*">
+        </div>
+        
+        <hr>
+        
+        <button type="submit" class="botao-salvar">SALVAR O CARTÃO</button>
+
+    </form>
+
+    <script>
+        // Adiciona um "ouvinte" para quando o formulário for submetido
+        document.getElementById('form-cartao').addEventListener('submit', salvarCartao);
+
+        function salvarCartao(event) {
+            // Previne o comportamento padrão do formulário (que é recarregar a página)
+            event.preventDefault();
+
+            // 1. Coleta os dados de texto
+            const idioma = document.getElementById('nome-idioma').value.trim();
+            const bloco1 = document.getElementById('bloco1-texto').value.trim();
+            const bloco2 = document.getElementById('bloco2-texto').value.trim();
+            const bloco3 = document.getElementById('bloco3-texto').value.trim();
+
+            // 2. Coleta os nomes dos arquivos de áudio
+            const audio1File = document.getElementById('bloco1-audio').files[0];
+            const audio2File = document.getElementById('bloco2-audio').files[0];
+            const audio3File = document.getElementById('bloco3-audio').files[0];
+
+            // Salva o nome do arquivo, se existir, senão usa string vazia
+            const audio1Name = audio1File ? audio1File.name : '';
+            const audio2Name = audio2File ? audio2File.name : '';
+            const audio3Name = audio3File ? audio3File.name : '';
+
+            // Se o campo principal (idioma) estiver vazio, avisa e para
+            if (!idioma) {
+                alert('Por favor, preencha o idioma que está praticando.');
+                return;
+            }
+
+            const novoCartao = {
+                // Adiciona um ID único (timestamp) para cada cartão
+                id: Date.now(), 
+                idioma: idioma,
+                bloco1: bloco1,
+                audio1: audio1Name, // <--- CAMPO AUDIO ADICIONADO AQUI
+                bloco2: bloco2,
+                audio2: audio2Name, // <--- CAMPO AUDIO ADICIONADO AQUI
+                bloco3: bloco3,
+                audio3: audio3Name  // <--- CAMPO AUDIO ADICIONADO AQUI
+            };
+
+            // 3. Recuperar os cartões existentes do localStorage
+            const cartoesSalvosString = localStorage.getItem('meusCartoes');
+            
+            // Converte a string JSON para um array JS. Se for nulo, cria um array vazio.
+            let cartoesArray = cartoesSalvosString ? JSON.parse(cartoesSalvosString) : [];
+
+            // 4. Adicionar o novo cartão ao array
+            cartoesArray.push(novoCartao);
+
+            // 5. Salvar o array atualizado de volta no localStorage (convertendo para string)
+            localStorage.setItem('meusCartoes', JSON.stringify(cartoesArray));
+
+            alert('Cartão salvo com sucesso no seu aparelho!');
+            
+            // 6. Limpar o formulário para o próximo cartão
+            document.getElementById('form-cartao').reset();
+        }
+
+    </script>
+<p>
+    <a href="Testecartao.html">Ver Cartões Salvos</a>
+</p>
+</body>
+</html>
